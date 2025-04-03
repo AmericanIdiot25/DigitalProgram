@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -168,7 +169,32 @@ html, body, #root {
   width: 100%;
 }
 
+/* Ensure images are properly centered and scale correctly */
+.gallery-image-wrapper img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
 /* Force background color to be black */
 .bg-black {
   background-color: #000000 !important;
+}
+
+/* Additional styles for debugging */
+.debug-info {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 10px;
+  padding: 2px 4px;
+  max-height: 100px;
+  overflow-y: auto;
+  z-index: 9999;
 }

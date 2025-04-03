@@ -5,10 +5,36 @@ import { useEffect, useState } from "react";
 const Index = () => {
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>("");
 
   // Ensure proper viewport setup for mobile devices
   useEffect(() => {
     try {
+      // Collect debug information
+      const collectDebugInfo = () => {
+        const location = window.location;
+        const info = {
+          href: location.href,
+          origin: location.origin,
+          pathname: location.pathname,
+          hostname: location.hostname,
+          userAgent: navigator.userAgent,
+          viewport: {
+            width: window.innerWidth,
+            height: window.innerHeight,
+          },
+          documentElement: {
+            clientWidth: document.documentElement.clientWidth,
+            clientHeight: document.documentElement.clientHeight,
+          }
+        };
+        
+        console.log("Debug information:", info);
+        setDebugInfo(JSON.stringify(info, null, 2));
+      };
+      
+      collectDebugInfo();
+
       // Fix for iOS Safari - ensures content fills the screen properly
       const setViewportHeight = () => {
         const vh = window.innerHeight * 0.01;
@@ -44,10 +70,47 @@ const Index = () => {
         rootElement.style.backgroundColor = '#000000';
       }
       
-      // Short delay to ensure everything is loaded properly
-      setTimeout(() => {
-        setIsReady(true);
-      }, 300);
+      // Attempt to load a test image to verify paths
+      const testImageLoad = () => {
+        const img = new Image();
+        img.onload = () => {
+          console.log("Test image loaded successfully");
+          // Short delay to ensure everything is loaded properly
+          setTimeout(() => {
+            setIsReady(true);
+          }, 300);
+        };
+        img.onerror = (e) => {
+          console.error("Test image failed to load:", e);
+          setError(`Failed to load test image. Check browser console for details.`);
+          
+          // Try again with alternative path
+          const altImg = new Image();
+          const repoName = window.location.pathname.split('/').filter(Boolean)[0];
+          const altPath = repoName ? `/${repoName}/images/page1.png` : '/images/page1.png';
+          
+          console.log(`Trying alternative path: ${altPath}`);
+          
+          altImg.onload = () => {
+            console.log(`Alternative path ${altPath} worked!`);
+            setIsReady(true);
+            setError(null);
+          };
+          
+          altImg.onerror = () => {
+            console.error(`Alternative path ${altPath} also failed`);
+            setError(`Failed to load images. Please check image paths and deployment settings.`);
+          };
+          
+          altImg.src = altPath;
+        };
+        
+        // First try the standard path
+        img.src = '/images/page1.png';
+        console.log("Attempting to load test image:", img.src);
+      };
+      
+      testImageLoad();
 
       return () => window.removeEventListener('resize', setViewportHeight);
     } catch (err) {
@@ -75,10 +138,24 @@ const Index = () => {
           <div className="bg-red-900/80 p-4 rounded-md max-w-[90%]">
             <h3 className="font-bold mb-2">Error:</h3>
             <p>{error}</p>
+            <div className="mt-4">
+              <p className="font-bold text-xs mb-1">Debug Info:</p>
+              <pre className="text-xs overflow-auto max-h-48 bg-black/50 p-2 rounded">
+                {debugInfo}
+              </pre>
+            </div>
           </div>
         </div>
       )}
       {isReady && <Gallery />}
+      {!isReady && !error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black text-white">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p>Loading gallery...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
