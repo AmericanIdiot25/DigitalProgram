@@ -6,13 +6,17 @@ interface ZoomableImageProps {
   src: string;
   alt: string;
   className?: string;
+  onLoad?: () => void;
+  onError?: () => void;
 }
 
-const ZoomableImage = ({ src, alt, className }: ZoomableImageProps) => {
+const ZoomableImage = ({ src, alt, className, onLoad, onError }: ZoomableImageProps) => {
   const imgRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const startPositionRef = useRef({ x: 0, y: 0 });
   const lastPositionRef = useRef({ x: 0, y: 0 });
   const lastDistanceRef = useRef<number | null>(null);
@@ -23,6 +27,8 @@ const ZoomableImage = ({ src, alt, className }: ZoomableImageProps) => {
     setScale(1);
     setPosition({ x: 0, y: 0 });
     lastPositionRef.current = { x: 0, y: 0 };
+    setImageLoaded(false);
+    setHasError(false);
   }, [src]);
 
   // Double click/tap to reset
@@ -92,15 +98,24 @@ const ZoomableImage = ({ src, alt, className }: ZoomableImageProps) => {
     lastDistanceRef.current = null;
   };
 
+  // Handle image load
+  const handleImageLoad = () => {
+    initialLoad.current = false;
+    setImageLoaded(true);
+    if (onLoad) onLoad();
+  };
+
+  // Handle image error
+  const handleImageError = () => {
+    console.error(`Failed to load image: ${src}`);
+    setHasError(true);
+    if (onError) onError();
+  };
+
   // Transform style for zooming and panning
   const transformStyle = {
     transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
     transition: initialLoad.current ? 'none' : scale === 1 ? 'transform 0.3s ease-out' : 'none',
-  };
-
-  // Once the image has loaded for the first time, we can enable transitions
-  const handleImageLoad = () => {
-    initialLoad.current = false;
   };
 
   return (
@@ -119,13 +134,20 @@ const ZoomableImage = ({ src, alt, className }: ZoomableImageProps) => {
         className="gallery-image-wrapper w-full h-full flex items-center justify-center"
         style={transformStyle}
       >
-        <img 
-          src={src} 
-          alt={alt} 
-          className="max-w-full max-h-full object-contain" 
-          onLoad={handleImageLoad}
-          draggable={false}
-        />
+        {hasError ? (
+          <div className="text-red-500 bg-black/20 p-4 rounded max-w-[80%] text-center">
+            Failed to load image
+          </div>
+        ) : (
+          <img 
+            src={src} 
+            alt={alt} 
+            className="max-w-full max-h-full object-contain" 
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            draggable={false}
+          />
+        )}
       </div>
     </div>
   );
