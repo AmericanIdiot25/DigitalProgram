@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,19 +36,12 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -97,5 +91,51 @@
 
   body {
     @apply bg-background text-foreground;
+    -webkit-overflow-scrolling: touch;
   }
+}
+
+/* Ensure full height for all devices including those with notches */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: none;
+}
+
+/* Handle safe areas for notched devices */
+@supports (padding: max(0px)) {
+  body, #root {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Custom styles for the image gallery */
+.gallery-container {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overflow-x: scroll;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
+  scrollbar-width: none;  /* Hide scrollbar for Firefox */
+}
+
+.gallery-container::-webkit-scrollbar {
+  display: none;  /* Hide scrollbar for Chrome, Safari and Opera */
+}
+
+.gallery-slide {
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+/* Pinch zoom styles */
+.gallery-image-wrapper {
+  touch-action: none;
+  will-change: transform;
 }
