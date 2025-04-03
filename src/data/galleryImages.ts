@@ -1,7 +1,11 @@
 
 // Gallery images data
-export const galleryImages = Array.from({ length: 24 }, (_, i) => ({
-  id: i + 1,
-  title: `Page ${i + 1}`,
-  src: `/images/page${i + 1}.png`
-}));
+export const galleryImages = Array.from({ length: 24 }, (_, i) => {
+  // Ensure the path is correct regardless of deployment environment
+  const index = i + 1;
+  return {
+    id: index,
+    title: `Page ${index}`,
+    src: `${window.location.pathname.endsWith('/') ? window.location.pathname : window.location.pathname + '/'}images/page${index}.png`
+  };
+});

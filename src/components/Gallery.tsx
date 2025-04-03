@@ -12,6 +12,7 @@ const Gallery = () => {
   const [loadedImages, setLoadedImages] = useState<number[]>([0]);
   const [imagesLoaded, setImagesLoaded] = useState<Record<number, boolean>>({});
   const [hasError, setHasError] = useState(false);
+  const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const isMobile = useIsMobile();
 
   // Set up intersection observer to detect current image
@@ -58,12 +59,24 @@ const Gallery = () => {
   useEffect(() => {
     setTouchEnabled('ontouchstart' in window);
     
-    // Log message to help debug
+    // Debug information
     console.log("Gallery mounted:", {
       touchEnabled: 'ontouchstart' in window,
       galleryImages: galleryImages.length,
-      isMobile
+      isMobile,
+      firstImagePath: galleryImages[0].src,
+      baseURL: window.location.origin
     });
+
+    // Check if images are accessible
+    const checkFirstImage = () => {
+      const img = new Image();
+      img.onload = () => console.log("Test image loaded successfully");
+      img.onerror = (e) => console.error("Test image failed to load:", e);
+      img.src = galleryImages[0].src;
+    };
+    
+    checkFirstImage();
   }, [isMobile]);
 
   // Add swipe gesture recognition
@@ -97,13 +110,14 @@ const Gallery = () => {
 
   // Handle image load errors
   const handleImageError = (index: number) => {
-    console.error(`Error loading image ${index}`);
+    console.error(`Error loading image ${index}, path: ${galleryImages[index].src}`);
     setHasError(true);
+    setErrorMessages(prev => [...prev, `Failed to load image ${index+1}`]);
   };
 
   // Handle image load success
   const handleImageLoad = (index: number) => {
-    console.log(`Image ${index} loaded successfully`);
+    console.log(`Image ${index} loaded successfully: ${galleryImages[index].src}`);
     setImagesLoaded(prev => ({...prev, [index]: true}));
   };
 
@@ -146,7 +160,20 @@ const Gallery = () => {
         {/* Error message */}
         {hasError && (
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-500/80 text-white p-4 rounded-md max-w-[80%] text-center">
-            There was an error loading some images. Make sure the image files exist in public/images/ with names like page1.png, page2.png, etc.
+            <p>Error loading images. Please check:</p>
+            <ul className="text-left text-sm mt-2">
+              <li>• Images exist in public/images/</li>
+              <li>• Filenames match page1.png, page2.png, etc.</li>
+              <li>• Images are valid PNG files</li>
+            </ul>
+            {errorMessages.length > 0 && (
+              <div className="mt-2 text-xs max-h-24 overflow-y-auto">
+                {errorMessages.slice(0, 5).map((msg, i) => (
+                  <p key={i}>{msg}</p>
+                ))}
+                {errorMessages.length > 5 && <p>...and {errorMessages.length - 5} more errors</p>}
+              </div>
+            )}
           </div>
         )}
       </div>
